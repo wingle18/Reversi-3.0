@@ -17,33 +17,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setGeometry(0,0,950,640);
 
-    role = black;
-
-    black_count = 2;
-    white_count = 2;
-
     leftUp = QPoint(0,0);
     rightDown = QPoint(600,600);
     rec = QRect(leftUp, rightDown);
 
-    width = 75;
-    length = 75;
+    p1 = QPoint(35, 35);
+    p2 = QPoint(565,565);
+
+    width = 66;
+    length = 66;
 
     mtime = new QTimer(this);
 
     initial_chessboard();
     update();
-
-    //connect(mtime, SIGNAL(timeout()), this, SLOT(AI_play()));
-    //mtime->start(1000);
-
-    if(end_of_game())
-    {
-        if(black_count>white_count)
-            qDebug()<<"black wins!";
-        else if(black_count<white_count)
-            qDebug()<<"white wins!";
-    }
 
 
 }
@@ -79,12 +66,31 @@ void MainWindow::initial_chessboard()
 
      for(int i=0; i<8; i++)
          for(int j=0; j<8; j++)
+         {
              reversi[i][j]= empty;
+             temp_black[i][j] = empty;
+             temp_white[i][j] = empty;
+         }
 
      reversi[3][3] = black;
      reversi[3][4] = white;
      reversi[4][3] = white;
      reversi[4][4] = black;
+
+     temp_black[3][3] = black;
+     temp_black[3][4] = white;
+     temp_black[4][3] = white;
+     temp_black[4][4] = black;
+
+     temp_white[3][3] = black;
+     temp_white[3][4] = white;
+     temp_white[4][3] = white;
+     temp_white[4][4] = black;
+
+     role = black;
+
+     black_count = 2;
+     white_count = 2;
 
      ui->black->setGeometry(650,180,120,120);
      ui->white->setGeometry(790,180,120,120);
@@ -94,7 +100,38 @@ void MainWindow::initial_chessboard()
      ui->black->show();
      ui->white->show();
      ui->blackCount->display(2);
-     ui->whiteCount->display(2);    
+     ui->whiteCount->display(2);
+
+     QFont font;
+     font.setPointSize(28);
+
+     ui->black_drop->setFont(font);
+     ui->black_drop->setGeometry(700,400,150,100);
+     ui->black_drop->hide();
+
+     ui->white_drop->setFont(font);
+     ui->white_drop->setGeometry(700,400,150,100);
+     ui->white_drop->hide();
+
+     ui->black_continue->setFont(font);
+     ui->black_continue->setGeometry(670,400,250,100);
+     ui->black_continue->setWordWrap(true);
+     ui->black_continue->setAlignment(Qt::AlignTop);
+     ui->black_continue->hide();
+
+     ui->white_continue->setFont(font);
+     ui->white_continue->setGeometry(670,400,250,100);
+     ui->white_continue->setWordWrap(true);
+     ui->white_continue->setAlignment(Qt::AlignTop);
+     ui->white_continue->hide();
+
+     ui->black_win->setFont(font);
+     ui->black_win->setGeometry(700,400,250,100);
+     ui->black_win->hide();
+
+     ui->white_win->setFont(font);
+     ui->white_win->setGeometry(700,400,250,100);
+     ui->white_win->hide();
  }
 
 void MainWindow::paintEvent(QPaintEvent *qpe)
@@ -112,9 +149,9 @@ void MainWindow::paintEvent(QPaintEvent *qpe)
         for(int j=0; j<8; j++)
         {
             if(reversi[i][j]==black)
-                p.drawPixmap(leftUp.x()+j*length, leftUp.y()+i*width, length, width, QPixmap(":/new/prefix1/black.jpg"));
+                p.drawPixmap(p1.x()+j*length, p1.y()+i*width, length, width, QPixmap(":/new/prefix1/black.jpg"));
             else if(reversi[i][j]==white)
-                p.drawPixmap(leftUp.x()+j*length, leftUp.y()+i*width, length, width, QPixmap(":/new/prefix1/white.jpg"));
+                p.drawPixmap(p1.x()+j*length, p1.y()+i*width, length, width, QPixmap(":/new/prefix1/white.jpg"));
         }
     }
     show_count();
@@ -175,6 +212,15 @@ int MainWindow::reverse_amount(const int i, const int j)
 
 void MainWindow::reverse(const int &i, const int &j)
 {
+    for(int m=0; m<8; m++)
+        for(int n=0; n<8; n++)
+        {
+            if(role == black)
+                temp_black[m][n] = reversi[m][n];
+            else
+                temp_white[m][n] = reversi[m][n];
+        }
+
     reversi[i][j] = role;
       int dir[8][2] = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
       int tempX = i, tempY = j;
@@ -318,32 +364,77 @@ void MainWindow::change_role()
       if(role==black)
       {
           role=white;
-          //AI_play();
 
-          connect(mtime, SIGNAL(timeout()), this, SLOT(AI_play()));
-          mtime->start(1000);
+          ui->black_drop->hide();
+          ui->white_drop->show();
+          ui->black_continue->hide();
+          ui->white_continue->hide();
+
+          if(can_play() && !end_of_game())
+          {
+              connect(mtime, SIGNAL(timeout()), this, SLOT(AI_play()));
+              mtime->start(1000);
+          }
+          else if(!can_play() && !end_of_game())
+          {
+              ui->black_drop->hide();
+              ui->white_drop->hide();
+              ui->black_continue->show();
+              ui->white_continue->hide();
+
+              connect(mtime, SIGNAL(timeout()), this, SLOT(change_role()));
+              mtime->start(1000);
+          }
       }
       else
       {
           role=black;
 
+          if(can_play() && !end_of_game())
+          {
+              ui->black_drop->show();
+              ui->white_drop->hide();
+              ui->black_continue->hide();
+              ui->white_continue->hide();
+
+              connect(mtime, SIGNAL(timeout()), this, SLOT(update()));
+              mtime->start(500);
+          }
+          else if(!can_play() && !end_of_game())
+          {
+              ui->black_drop->hide();
+              ui->white_drop->hide();
+              ui->black_continue->hide();
+              ui->white_continue->show();
+
+              connect(mtime, SIGNAL(timeout()), this, SLOT(change_role()));
+              mtime->start(1000);
+          }
       }
 
   }
 
 void MainWindow::AI_play()
   {
+    if(end_of_game())
+    {
+        ui->black_drop->hide();
+        ui->white_drop->hide();
+        ui->black_continue->hide();
+        ui->white_continue->hide();
+    }
       if(role == white)
       {
+          //bool flag = 0;
           int weight=0, max=-1000, m=0, n=0;
           int i=0, j=0;
-      for(i=0; i<8; i++)
+       for(i=0; i<8; i++)
           for(j=0; j<8; j++)
           {
               if( reverse_amount(i,j)>0 )
               {
                   weight = xy_value[i][j]+reverse_amount(i,j)*4+CanPlay_count(i,j)*10;
-
+                  //flag = 1;
 
                       if(weight>max)
                       {
@@ -351,17 +442,23 @@ void MainWindow::AI_play()
                           m=i;
                           n=j;
                       }
-
               }
           }
+
       qDebug()<<"**********************";
       qDebug()<<"xy_value["<<m<<"]["<<n<<"] = "<<xy_value[m][n];
       qDebug()<<"reverse_amount = "<<reverse_amount(m,n);
       qDebug()<<"canPaly_count = "<<CanPlay_count(m,n);
       qDebug()<<"max = "<<max;
+
+      //if(flag == 1){ui->black_drop->show();ui->white_drop->hide();ui->black_continue->hide();ui->white_continue->hide();}
+      //else{ui->black_drop->hide();ui->white_drop->hide();ui->black_continue->show(); ui->white_continue->hide();}
+
       reverse(m,n);
       update();
+
       change_role();
+      game_over();
       }
       else
           return;
@@ -387,7 +484,14 @@ void MainWindow::show_count()
 
 void MainWindow::mousePressEvent(QMouseEvent *qme)
 {
-    //cout << "qme = " << qme->pos();
+    if(end_of_game())
+    {
+        ui->black_drop->hide();
+        ui->white_drop->hide();
+        ui->black_continue->hide();
+        ui->white_continue->hide();
+
+    }
     if(role == black)
     {
         setMouseTracking(true);
@@ -399,10 +503,10 @@ void MainWindow::mousePressEvent(QMouseEvent *qme)
             int i = 0;
             int j = 0;
 
-            if(x >= leftUp.x() && x <= (leftUp.x() + 8 * width) && y >= leftUp.y() && y <= (leftUp.y() + 8 * length))
+            if(x >= p1.x() && x <= (p1.x() + 8 * width) && y >= p1.y() && y <= (p1.y() + 8 * length))
             {
-                i = (qme->y() - leftUp.y()) / length;
-                j = (qme->x() - leftUp.x()) / width;
+                i = (qme->y() - p1.y()) / length;
+                j = (qme->x() - p1.x()) / width;
 
                 //reversi[i][j] = role;
 
@@ -410,20 +514,16 @@ void MainWindow::mousePressEvent(QMouseEvent *qme)
                 {
                     reverse(i,j);
                     qDebug()<<"can drop!";
-                    //qDebug()<<"reverse_amount = "<<reverse_amount(i, j);
-
                     //connect(mtime, SIGNAL(timeout()), this, SLOT(change_role()));
                     //mtime->start(1000);
 
                   this->change_role();
                   update();
                 }
+                game_over();
             }
             else
                 return;
-
-            //qDebug()<<i<<","<<j;
-            //qDebug()<<"reverse_amount = "<<reverse_amount(i, j);
       }
    }
    else
@@ -439,4 +539,53 @@ bool MainWindow::end_of_game()
               if(reverse_amount(i, j)>0)
                   flag=0;
       return flag;
+}
+
+bool MainWindow::can_play()
+{
+    bool flag = 0;
+    for(int i=0; i<8; i++)
+        for(int j=0; j<8; j++)
+            if(reverse_amount(i,j) > 0)
+                flag = 1;
+    return flag;
+}
+
+void MainWindow::game_over()
+{
+    if(end_of_game())
+    {
+        if(black_count > white_count)
+        {
+            ui->black_drop->hide();
+            ui->white_drop->hide();
+            ui->black_continue->hide();
+            ui->white_continue->hide();
+            ui->black_win->show();
+            ui->white_win->hide();
+        }
+        else if(black_count < white_count)
+        {
+            ui->black_drop->hide();
+            ui->white_drop->hide();
+            ui->black_continue->hide();
+            ui->white_continue->hide();
+            ui->black_win->hide();
+            ui->white_win->show();
+        }
+    }
+}
+
+void MainWindow::on_actionStart_triggered()
+{
+    initial_chessboard();
+    update();
+}
+
+void MainWindow::on_actionRegret_triggered()
+{
+    for(int i=0; i<8; i++)
+        for(int j=0; j<8; j++)
+            reversi[i][j] = temp_black[i][j];
+    update();
 }

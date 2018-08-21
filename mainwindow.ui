@@ -28,9 +28,9 @@
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>250</y>
+      <y>240</y>
       <width>91</width>
-      <height>61</height>
+      <height>71</height>
      </rect>
     </property>
    </widget>
@@ -64,6 +64,84 @@
     </property>
     <property name="pixmap">
      <pixmap resource="image.qrc">:/new/prefix1/white.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="black_drop">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>340</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>请黑方落子</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="white_drop">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>370</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>电脑思考中...</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="white_continue">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>390</y>
+      <width>191</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>黑方无子可下，白方继续...</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="black_continue">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>410</y>
+      <width>171</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>白方无子可下，请黑方继续</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="black_win">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>330</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>黑方获胜！</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="white_win">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>360</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>白方获胜！</string>
     </property>
    </widget>
   </widget>

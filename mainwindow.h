@@ -35,8 +35,6 @@ public:
 
     void paintEvent(QPaintEvent *);
 
-    void change_role();
-
     int reverse_amount(const int , const int );//看能翻多少个子
 
     void reverse(const int &, const int &);//把子给翻了
@@ -51,6 +49,12 @@ public:
 
     bool end_of_game();
 
+    bool can_play();
+
+    void game_start();
+
+    void game_over();
+
     //void mouseMoveEvent(QMouseEvent *);
 
 private slots:
@@ -62,6 +66,12 @@ private slots:
 
     void AI_play();
 
+    void change_role();
+
+    void on_actionStart_triggered();
+
+    void on_actionRegret_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -69,7 +79,9 @@ private:
 
     int reversi[8][8];
 
-    QPoint leftUp, rightDown;
+    int temp_black[8][8], temp_white[8][8];
+
+    QPoint leftUp, rightDown, p1, p2;
 
     reversi_status role;//判断下棋角色
 
